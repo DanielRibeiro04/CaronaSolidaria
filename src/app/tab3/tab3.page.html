@@ -1,0 +1,108 @@
+<ion-header>
+  <ion-toolbar class="toolbar-perfil">
+    <ion-title>Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="perfil-content">
+  <div class="perfil-wrapper">
+    <ng-container *ngIf="usuarioAtual; else visitante">
+      <section class="hero-card">
+        <div class="avatar">{{ iniciaisUsuario }}</div>
+        <div>
+          <p class="hero-kicker">Minha conta</p>
+          <h1>{{ usuarioAtual.nome }}</h1>
+          <p class="hero-text">{{ usuarioAtual.email }}</p>
+        </div>
+      </section>
+
+      <ion-card class="section-card">
+        <ion-card-header>
+          <ion-card-title>Dados Cadastrais</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Nome completo</ion-label>
+            <ion-input [(ngModel)]="perfil.nome"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input type="email" [(ngModel)]="perfil.email"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Telefone</ion-label>
+            <ion-input type="tel" [(ngModel)]="perfil.telefone"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">CEP</ion-label>
+            <ion-input [(ngModel)]="perfil.cep"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Rua</ion-label>
+            <ion-input [(ngModel)]="perfil.rua"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Bairro</ion-label>
+            <ion-input [(ngModel)]="perfil.bairro"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Numero</ion-label>
+            <ion-input [(ngModel)]="perfil.numero"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Nova senha</ion-label>
+            <ion-input type="password" [(ngModel)]="perfil.senha" placeholder="Preencha so se quiser trocar"></ion-input>
+          </ion-item>
+
+          <ion-button expand="block" class="save-button" (click)="salvarPerfil()">
+            SALVAR ALTERACOES
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="section-card denuncia-card">
+        <ion-card-header>
+          <ion-card-title>Denuncia</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <p class="section-text">
+            Use este campo para relatar problemas com usuarios, comportamento inadequado ou qualquer situacao de risco.
+          </p>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Assunto</ion-label>
+            <ion-input [(ngModel)]="denuncia.assunto" placeholder="Ex.: motorista faltou"></ion-input>
+          </ion-item>
+
+          <ion-item class="profile-item" lines="none">
+            <ion-label position="stacked">Descreva o ocorrido</ion-label>
+            <ion-textarea autoGrow="true" rows="5" [(ngModel)]="denuncia.descricao"></ion-textarea>
+          </ion-item>
+
+          <ion-button expand="block" fill="outline" class="report-button" (click)="enviarDenuncia()">
+            ENVIAR DENUNCIA
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </ng-container>
+
+    <ng-template #visitante>
+      <section class="empty-card">
+        <h2>Seu perfil aparece aqui</h2>
+        <p>Faca login para editar seus dados e enviar denuncias.</p>
+        <ion-button expand="block" class="save-button" (click)="irParaLogin()">
+          IR PARA LOGIN
+        </ion-button>
+      </section>
+    </ng-template>
+  </div>
+</ion-content>

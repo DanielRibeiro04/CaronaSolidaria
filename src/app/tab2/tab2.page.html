@@ -1,0 +1,140 @@
+<ion-header>
+  <ion-toolbar class="toolbar-minhas">
+    <ion-title>Minhas Caronas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="content-tab2">
+  <div class="tab2-wrapper">
+    <section class="hero-card">
+      <p class="hero-kicker">Minha area</p>
+      <h1 *ngIf="usuarioAtual; else visitanteTitulo">Ola, {{ usuarioAtual.nome }}</h1>
+
+      <ng-template #visitanteTitulo>
+        <h1>Acompanhe suas caronas</h1>
+      </ng-template>
+
+      <p class="hero-text" *ngIf="usuarioAtual; else visitanteTexto">
+        Aqui aparecem as caronas em que voce entrou e tambem as que voce oferece como motorista.
+      </p>
+
+      <ng-template #visitanteTexto>
+        <p class="hero-text">
+          Entre com seu email para ver suas caronas como passageiro ou motorista.
+        </p>
+      </ng-template>
+
+      <div class="hero-actions" *ngIf="!usuarioAtual">
+        <ion-button expand="block" class="primary-button" (click)="irParaLogin()">
+          FAZER LOGIN
+        </ion-button>
+      </div>
+    </section>
+
+    <section class="stats-grid" *ngIf="usuarioAtual">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <span class="stat-label">Total</span>
+          <strong>{{ totalCaronas }}</strong>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <span class="stat-label">Passageiro</span>
+          <strong>{{ caronasComoPassageiro.length }}</strong>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <span class="stat-label">Motorista</span>
+          <strong>{{ caronasComoMotorista.length }}</strong>
+        </ion-card-content>
+      </ion-card>
+    </section>
+
+    <ng-container *ngIf="usuarioAtual && totalCaronas > 0; else semCaronasUsuario">
+      <section class="section-block">
+        <div class="section-header">
+          <h2>Como passageiro</h2>
+          <span>{{ caronasComoPassageiro.length }}</span>
+        </div>
+
+        <div *ngIf="caronasComoPassageiro.length > 0; else semCaronasPassageiro">
+          <ion-card
+            class="carona-card"
+            *ngFor="let carona of caronasComoPassageiro"
+            (click)="verDetalhes(carona.id)">
+            <ion-card-content>
+              <div class="card-top">
+                <span class="card-badge badge-passageiro">Passageiro</span>
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+              </div>
+
+              <div class="card-title">{{ carona.origem }} -> {{ carona.destino }}</div>
+              <div class="card-driver">Motorista: {{ carona.nome }}</div>
+
+              <div class="card-footer">
+                <span>{{ carona.horario }}</span>
+                <span>{{ carona.vagas }} vaga<span *ngIf="carona.vagas !== 1">s</span> restantes</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <ng-template #semCaronasPassageiro>
+          <div class="empty-state">
+            <p>Voce ainda nao entrou em nenhuma carona.</p>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="section-block">
+        <div class="section-header">
+          <h2>Como motorista</h2>
+          <span>{{ caronasComoMotorista.length }}</span>
+        </div>
+
+        <div *ngIf="caronasComoMotorista.length > 0; else semCaronasMotorista">
+          <ion-card
+            class="carona-card"
+            *ngFor="let carona of caronasComoMotorista"
+            (click)="verDetalhes(carona.id)">
+            <ion-card-content>
+              <div class="card-top">
+                <span class="card-badge badge-motorista">Motorista</span>
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+              </div>
+
+              <div class="card-title">{{ carona.origem }} -> {{ carona.destino }}</div>
+              <div class="card-driver">
+                {{ carona.passageiros.length }} passageiro<span *ngIf="carona.passageiros.length !== 1">s</span> confirmado<span *ngIf="carona.passageiros.length !== 1">s</span>
+              </div>
+
+              <div class="card-footer">
+                <span>{{ carona.horario }}</span>
+                <span>{{ carona.vagas }} vaga<span *ngIf="carona.vagas !== 1">s</span> livres</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <ng-template #semCaronasMotorista>
+          <div class="empty-state">
+            <p>Voce ainda nao ofereceu nenhuma carona.</p>
+          </div>
+        </ng-template>
+      </section>
+    </ng-container>
+
+    <ng-template #semCaronasUsuario>
+      <section class="empty-overall" *ngIf="usuarioAtual">
+        <p>Nada por aqui ainda. Explore as caronas disponiveis ou ofereca uma nova.</p>
+        <ion-button expand="block" fill="outline" class="secondary-button" (click)="explorarCaronas()">
+          VER CARONAS
+        </ion-button>
+      </section>
+    </ng-template>
+  </div>
+</ion-content>

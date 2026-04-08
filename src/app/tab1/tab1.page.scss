@@ -1,0 +1,154 @@
+.content-tab1 {
+  --background: #f5f5f5;
+  padding: 24px 16px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.toolbar-carona {
+  --background: #2E7D32;
+}
+
+.busca-container {
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.input-busca {
+  --background: white;
+  --border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  font-size: 14px;
+}
+
+.botoes-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  width: 100%;
+  max-width: 720px;
+
+  ion-button {
+    flex: 1;
+    min-width: 0;
+    --border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 12px 0;
+  }
+
+  .btn-oferecer {
+    --background: #2E7D32;
+  }
+
+  .btn-pedir {
+    --border-color: #2E7D32;
+    --color: #2E7D32;
+    --background: white;
+  }
+}
+
+.caronas-container {
+  width: 100%;
+  max-width: 720px;
+  margin-top: 16px;
+
+  h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.carona-card {
+  --background: white;
+  --border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:active {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  ion-card-content {
+    padding: 12px 16px;
+  }
+}
+
+.carona-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.carona-nome {
+  font-size: 14px;
+  color: #333;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.icone-seta {
+  font-size: 20px;
+  color: #ccc;
+}
+
+.carona-rota {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0 8px 0;
+}
+
+.carona-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #999;
+}
+
+.carona-horario,
+.carona-vagas {
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .content-tab1 {
+    padding: 12px 10px;
+  }
+
+  .busca-container,
+  .botoes-container,
+  .caronas-container {
+    max-width: 100%;
+  }
+
+  .botoes-container {
+    flex-wrap: wrap;
+  }
+
+  .botoes-container ion-button {
+    width: 100%;
+  }
+
+  .carona-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .carona-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+

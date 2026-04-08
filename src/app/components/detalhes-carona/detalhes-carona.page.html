@@ -1,0 +1,107 @@
+<ion-content class="content-detalhes">
+  <div class="detalhes-card" *ngIf="carona; else semDados">
+    <div class="top-bar">
+      <div class="titulo-secao">Detalhes da Carona</div>
+    </div>
+
+    <div class="motorista-info">
+      <ion-icon name="person-circle-outline"></ion-icon>
+      <div>
+        <span class="motorista-label">MOTORISTA</span>
+        <h2>{{ carona.nome }}</h2>
+      </div>
+    </div>
+
+    <ion-card class="info-card">
+      <ion-card-content>
+        <div class="info-item">
+          <ion-icon name="time-outline"></ion-icon>
+          <div>
+            <span>Horário</span>
+            <strong>{{ carona.horario }}</strong>
+          </div>
+        </div>
+        <div class="info-item">
+          <ion-icon name="people-outline"></ion-icon>
+          <div>
+            <span>Vagas disponíveis</span>
+            <strong>{{ carona.vagas }}</strong>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="route-card">
+      <ion-card-content>
+        <div class="route-item">
+          <ion-icon name="location-outline"></ion-icon>
+          <div>
+            <span>Origem</span>
+            <strong>{{ carona.origem }}</strong>
+          </div>
+        </div>
+        <div class="route-item">
+          <ion-icon name="flag-outline"></ion-icon>
+          <div>
+            <span>Destino</span>
+            <strong>{{ carona.destino }}</strong>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="acoes-carona">
+      <ion-button expand="block" fill="outline" class="action-button" (click)="abrirRota()">
+        <ion-icon name="map-outline"></ion-icon>
+        Ver rota no Google Maps
+      </ion-button>
+
+      <ion-button expand="block" fill="solid" class="action-button whatsapp-button" (click)="conversarWhatsapp()">
+        <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+        Conversar no WhatsApp
+      </ion-button>
+
+      <ng-container *ngIf="ehMotorista; else acoesPassageiroOuVisitante">
+        <ion-button expand="block" fill="solid" class="action-button editar-button" (click)="editarCarona()">
+          <ion-icon name="create-outline"></ion-icon>
+          Editar Carona
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" color="danger" class="action-button excluir-button" (click)="confirmarExclusao()">
+          <ion-icon name="trash-outline"></ion-icon>
+          Excluir Carona
+        </ion-button>
+      </ng-container>
+
+      <ng-template #acoesPassageiroOuVisitante>
+        <ion-button
+          *ngIf="ehPassageiro; else acaoPegarCarona"
+          expand="block"
+          fill="outline"
+          color="danger"
+          class="action-button cancelar-button"
+          (click)="confirmarCancelamentoParticipacao()">
+          <ion-icon name="close-circle-outline"></ion-icon>
+          Cancelar Participacao
+        </ion-button>
+
+        <ng-template #acaoPegarCarona>
+          <ion-button expand="block" fill="solid" class="pegar-button" (click)="pegarCarona()">
+            Pegar Carona
+          </ion-button>
+        </ng-template>
+      </ng-template>
+
+      <ion-button expand="block" fill="solid" class="voltar-button" (click)="voltarTab1()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        Voltar
+      </ion-button>
+    </div>
+  </div>
+
+  <ng-template #semDados>
+    <div class="empty-state">
+      <p>Carona não encontrada.</p>
+    </div>
+  </ng-template>
+</ion-content>

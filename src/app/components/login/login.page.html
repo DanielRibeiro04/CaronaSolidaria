@@ -1,0 +1,32 @@
+<ion-content>
+
+  <div class="container">
+
+    <img src="../../../assets/logo.png" class="logo" />
+
+    <ion-input
+      placeholder="Email"
+      type="email"
+      [(ngModel)]="credenciais.email"
+      fill="outline">
+    </ion-input>
+
+    <ion-input
+      placeholder="Senha"
+      type="password"
+      [(ngModel)]="credenciais.senha"
+      fill="outline">
+    </ion-input>
+
+    <ion-button expand="block" class="btn-login" (click)="entrar()">
+      LOGIN
+    </ion-button>
+
+    <p class="cadastro">
+      Não possui uma conta?
+      <span routerLink="/cadastro">Clique aqui</span>
+    </p>
+
+  </div>
+
+</ion-content>

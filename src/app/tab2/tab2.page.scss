@@ -1,0 +1,247 @@
+.toolbar-minhas {
+  --background: #2e7d32;
+  --color: #ffffff;
+}
+
+.content-tab2 {
+  --background: #f4f6f3;
+}
+
+.tab2-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hero-card {
+  background: linear-gradient(135deg, #2e7d32 0%, #3f9c45 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 22px 20px;
+  box-shadow: 0 14px 30px rgba(46, 125, 50, 0.18);
+}
+
+.hero-kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.hero-card h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.hero-text {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.hero-actions {
+  margin-top: 18px;
+}
+
+.primary-button,
+.secondary-button {
+  --border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.primary-button {
+  --background: #ffffff;
+  --color: #2e7d32;
+}
+
+.secondary-button {
+  --border-color: #2e7d32;
+  --color: #2e7d32;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  margin: 0;
+  --background: #ffffff;
+  --border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card ion-card-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7b8578;
+}
+
+.stat-card strong {
+  font-size: 24px;
+  color: #1f2b1f;
+}
+
+.section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #425243;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.section-header span {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(46, 125, 50, 0.12);
+  color: #2e7d32;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.carona-card {
+  margin: 0 0 12px;
+  --background: #ffffff;
+  --border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.carona-card:last-child {
+  margin-bottom: 0;
+}
+
+.carona-card ion-card-content {
+  padding: 16px;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.card-top ion-icon {
+  font-size: 20px;
+  color: #b7beb6;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-passageiro {
+  background: rgba(34, 110, 255, 0.12);
+  color: #226eff;
+}
+
+.badge-motorista {
+  background: rgba(46, 125, 50, 0.12);
+  color: #2e7d32;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2b1f;
+  line-height: 1.3;
+}
+
+.card-driver {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #677367;
+  line-height: 1.4;
+}
+
+.card-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #425243;
+}
+
+.empty-state,
+.empty-overall {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px 16px;
+  text-align: center;
+  color: #677367;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.empty-state p,
+.empty-overall p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.empty-overall {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .tab2-wrapper {
+    padding: 16px 12px 24px;
+  }
+
+  .hero-card h1 {
+    font-size: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "CaronaSolidariaAAI",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="success">
+    <ion-title>{{ tituloPagina }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-item>
+    <ion-label position="stacked">Seu nome</ion-label>
+    <ion-input
+      [(ngModel)]="carona.nome"
+      [readonly]="!!usuarioAtual"
+      placeholder="Digite seu nome">
+    </ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Link da rota Google Maps</ion-label>
+    <ion-input [(ngModel)]="carona.linkMapa" placeholder="Cole o link do Google Maps"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Origem</ion-label>
+    <ion-input [(ngModel)]="carona.origem"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Destino</ion-label>
+    <ion-input [(ngModel)]="carona.destino"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Numero de vagas</ion-label>
+    <ion-input type="number" [(ngModel)]="carona.vagas"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="stacked">Horario</ion-label>
+    <ion-input type="time" [(ngModel)]="carona.horario"></ion-input>
+  </ion-item>
+
+  <ion-button
+    expand="block"
+    color="success"
+    class="ion-margin-top"
+    (click)="salvar()">
+    {{ textoBotaoPrincipal }}
+  </ion-button>
+
+  <ion-button
+    expand="block"
+    fill="outline"
+    color="medium"
+    class="ion-margin-top"
+    (click)="voltar()">
+    VOLTAR
+  </ion-button>
+
+</ion-content>

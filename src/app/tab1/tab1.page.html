@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar style="--background: #2e7d32; --color: white;">
+  <ion-title>Caronas</ion-title>
+</ion-toolbar>
+</ion-header>
+
+<ion-content class="content-tab1">
+
+  <!-- Barra de Busca -->
+  <div class="busca-container">
+    <ion-searchbar
+      class="input-busca"
+      placeholder="Buscar rota ou bairro"
+      [(ngModel)]="termoBusca"
+      (ionChange)="filtrarCaronas()">
+    </ion-searchbar>
+  </div>
+
+  <!-- Botões de Ação -->
+  <div class="botoes-container">
+    <ion-button
+      class="btn-oferecer"
+      fill="solid"
+      (click)="irOferecer()">
+      OFERECER CARONA
+    </ion-button>
+    <ion-button
+      class="btn-pedir"
+      fill="outline"
+      (click)="irPedir()">
+      PEDIR CARONA
+    </ion-button>
+  </div>
+
+  <!-- Caronas Disponíveis -->
+  <div class="caronas-container">
+    <h3>Caronas disponíveis</h3>
+
+    <div
+      *ngIf="caronasExibidas.length > 0; else semCaronas"
+      class="carona-list">
+
+      <ion-card
+        class="carona-card"
+        *ngFor="let carona of caronasExibidas"
+        (click)="verDetalhes(carona.id)">
+
+        <ion-card-content>
+          <!-- Header com nome e seta -->
+          <div class="carona-header">
+            <span class="carona-nome">{{ carona.nome }}</span>
+            <ion-icon name="chevron-forward-outline" class="icone-seta"></ion-icon>
+          </div>
+
+          <!-- Rota -->
+          <div class="carona-rota">
+            {{ carona.origem }} → {{ carona.destino }}
+          </div>
+
+          <!-- Footer com horário e vagas -->
+          <div class="carona-footer">
+            <span class="carona-horario">{{ carona.horario }}</span>
+            <span class="carona-vagas">{{ carona.vagas }} VAGA<span *ngIf="carona.vagas !== 1">S</span></span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+    </div>
+
+    <!-- Mensagem quando não há caronas -->
+    <ng-template #semCaronas>
+      <ion-text color="medium">
+        <p text-center>Nenhuma carona disponível</p>
+      </ion-text>
+    </ng-template>
+
+  </div>
+
+</ion-content>

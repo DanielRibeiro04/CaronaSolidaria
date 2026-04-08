@@ -1,0 +1,58 @@
+<ion-content class="cadastro-content">
+
+  <div class="container">
+
+    <img src="assets/logo.png" class="logo" />
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Primeiro nome</ion-label>
+      <ion-input type="text" [(ngModel)]="cadastro.primeiroNome"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Sobrenome</ion-label>
+      <ion-input type="text" [(ngModel)]="cadastro.sobrenome"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input type="email" [(ngModel)]="cadastro.email"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Telefone</ion-label>
+      <ion-input type="tel" [(ngModel)]="cadastro.telefone"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">CEP</ion-label>
+      <ion-input type="text" [(ngModel)]="cadastro.cep"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Rua</ion-label>
+      <ion-input type="text" [(ngModel)]="cadastro.rua"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Bairro</ion-label>
+      <ion-input type="text" [(ngModel)]="cadastro.bairro"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Numero</ion-label>
+      <ion-input type="text" [(ngModel)]="cadastro.numero"></ion-input>
+    </ion-item>
+
+    <ion-item fill="clear">
+      <ion-label position="stacked">Senha</ion-label>
+      <ion-input type="password" [(ngModel)]="cadastro.senha"></ion-input>
+    </ion-item>
+
+    <ion-button expand="block" class="btn-criar" (click)="criarConta()">
+      CRIAR
+    </ion-button>
+
+  </div>
+
+</ion-content>
