@@ -34,8 +34,12 @@ ion-input {
   color: #666;
 }
 
-.cadastro span {
+.cadastro-link {
+  background: transparent;
+  border: 0;
   color: #1976d2;
   font-weight: bold;
   cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
 }

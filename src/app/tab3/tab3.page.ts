@@ -58,7 +58,7 @@ export class Tab3Page implements OnInit {
       return;
     }
 
-    const resultado = this.usuarioService.atualizarUsuarioAtual({
+    const resultado = await this.usuarioService.atualizarUsuarioAtual({
       ...this.perfil,
       senha: this.perfil.senha.trim() || this.usuarioAtual?.senha || ''
     });
@@ -78,7 +78,7 @@ export class Tab3Page implements OnInit {
 
   async enviarDenuncia() {
     if (!this.usuarioAtual) {
-      await this.exibirToast('Faca login para enviar uma denuncia.', 'warning');
+      await this.exibirToast('Faça login para enviar uma denúncia.', 'warning');
       return;
     }
 
@@ -87,10 +87,10 @@ export class Tab3Page implements OnInit {
       return;
     }
 
-    this.denunciaService.registrar({
+    await this.denunciaService.registrar({
       usuarioNome: this.usuarioAtual.nome,
       usuarioEmail: this.usuarioAtual.email,
-      assunto: this.denuncia.assunto.trim() || 'Denuncia geral',
+      assunto: this.denuncia.assunto.trim() || 'Denúncia geral',
       descricao: this.denuncia.descricao
     });
 
@@ -99,7 +99,7 @@ export class Tab3Page implements OnInit {
       descricao: ''
     };
 
-    await this.exibirToast('Denuncia enviada com sucesso.', 'success');
+    await this.exibirToast('Denúncia enviada com sucesso.', 'success');
   }
 
   irParaLogin() {

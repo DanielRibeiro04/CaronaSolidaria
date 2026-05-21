@@ -51,7 +51,7 @@ export class Tab1Page implements OnInit, OnDestroy {
     );
   }
 
-  verDetalhes(id: number) {
+  verDetalhes(id: string) {
     this.router.navigate(['/detalhes-carona', id]);
   }
 

@@ -18,13 +18,13 @@
       fill="outline">
     </ion-input>
 
-    <ion-button expand="block" class="btn-login" (click)="entrar()">
+    <ion-button expand="block" class="btn-login" type="button" (click)="entrar()">
       LOGIN
     </ion-button>
 
     <p class="cadastro">
       Não possui uma conta?
-      <span routerLink="/cadastro">Clique aqui</span>
+      <button type="button" class="cadastro-link" (click)="irParaCadastro()">Clique aqui</button>
     </p>
 
   </div>

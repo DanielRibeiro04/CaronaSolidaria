@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+import { collection, addDoc } from 'firebase/firestore';
+import { firebaseDb } from '../firebase.config';
 
 export interface Denuncia {
-  id: number;
+  id: string;
   usuarioNome: string;
   usuarioEmail: string;
   assunto: string;
@@ -13,14 +15,10 @@ export interface Denuncia {
   providedIn: 'root'
 })
 export class DenunciaService {
-  private readonly storageKey = 'denuncias_enviadas';
+  private denunciasCollection = 'denuncias';
 
-  registrar(denuncia: Omit<Denuncia, 'id' | 'criadoEm'>): Denuncia {
-    const denuncias = this.listar();
-    const maiorId = denuncias.reduce((max, item) => Math.max(max, item.id), 0);
-
-    const novaDenuncia: Denuncia = {
-      id: maiorId + 1,
+  async registrar(denuncia: Omit<Denuncia, 'id' | 'criadoEm'>): Promise<Denuncia> {
+    const novaDenuncia: Omit<Denuncia, 'id'> = {
       criadoEm: new Date().toISOString(),
       usuarioNome: denuncia.usuarioNome.trim(),
       usuarioEmail: denuncia.usuarioEmail.trim().toLowerCase(),
@@ -28,21 +26,17 @@ export class DenunciaService {
       descricao: denuncia.descricao.trim()
     };
 
-    denuncias.push(novaDenuncia);
-    localStorage.setItem(this.storageKey, JSON.stringify(denuncias));
-    return novaDenuncia;
+    const docRef = await addDoc(collection(firebaseDb, this.denunciasCollection), novaDenuncia);
+
+    return {
+      ...novaDenuncia,
+      id: docRef.id
+    };
   }
 
+  // Método mantido para compatibilidade, mas agora retorna array vazio
+  // As denúncias são enviadas para o Firestore e não ficam armazenadas localmente
   listar(): Denuncia[] {
-    const valor = localStorage.getItem(this.storageKey);
-    if (!valor) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(valor) as Denuncia[];
-    } catch {
-      return [];
-    }
+    return [];
   }
 }

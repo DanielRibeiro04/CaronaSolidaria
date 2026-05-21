@@ -14,7 +14,7 @@ export class OferecerCaronaPage implements OnInit {
   carona: NovaCarona = this.criarCaronaInicial();
   usuarioAtual: Usuario | null = null;
   modoEdicao = false;
-  private caronaId?: number;
+  private caronaId?: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -28,9 +28,8 @@ export class OferecerCaronaPage implements OnInit {
     this.usuarioAtual = this.usuarioService.obterUsuarioAtual();
     this.route.paramMap.subscribe(async params => {
       const idParam = params.get('id');
-      const id = idParam ? Number(idParam) : NaN;
-      this.modoEdicao = !!idParam && !isNaN(id);
-      this.caronaId = this.modoEdicao ? id : undefined;
+      this.modoEdicao = !!idParam;
+      this.caronaId = idParam ?? undefined;
       await this.carregarFormulario();
     });
   }
@@ -64,6 +63,10 @@ export class OferecerCaronaPage implements OnInit {
       alert('Por favor, defina um numero de vagas valido');
       return;
     }
+     if (!this.carona.data) {
+      alert('Por favor, selecione a data');
+      return;
+    }
 
     const dadosCarona: NovaCarona = {
       ...this.carona,
@@ -78,7 +81,7 @@ export class OferecerCaronaPage implements OnInit {
         return;
       }
 
-      const resultado = this.caronaService.atualizarCarona(this.caronaId, dadosCarona, {
+      const resultado = await this.caronaService.atualizarCarona(this.caronaId, dadosCarona, {
         nome: this.usuarioAtual.nome,
         email: this.usuarioAtual.email
       });
@@ -141,6 +144,7 @@ export class OferecerCaronaPage implements OnInit {
       horario: caronaExistente.horario,
       vagas: caronaExistente.vagas,
       linkMapa: caronaExistente.linkMapa,
+      data: caronaExistente.data,
       motoristaEmail: caronaExistente.motoristaEmail
     };
   }
@@ -153,6 +157,7 @@ export class OferecerCaronaPage implements OnInit {
       horario: '',
       vagas: 0,
       linkMapa: '',
+      data: '',
       motoristaEmail: undefined
     };
   }

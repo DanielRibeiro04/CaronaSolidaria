@@ -41,7 +41,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     return this.caronasComoPassageiro.length + this.caronasComoMotorista.length;
   }
 
-  verDetalhes(id: number) {
+  verDetalhes(id: string) {
     this.navCtrl.navigateForward(`/detalhes-carona/${id}`);
   }
 

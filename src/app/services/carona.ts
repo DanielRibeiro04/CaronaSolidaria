@@ -1,5 +1,19 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import {
+  collection,
+  doc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+} from 'firebase/firestore';
+import { firebaseDb } from '../firebase.config';
+import { UsuarioService } from './usuario';
 
 export interface UsuarioCarona {
   nome: string;
@@ -7,7 +21,7 @@ export interface UsuarioCarona {
 }
 
 export interface Carona {
-  id: number;
+  id: string;
   nome: string;
   origem: string;
   destino: string;
@@ -16,9 +30,11 @@ export interface Carona {
   linkMapa: string;
   motoristaEmail?: string;
   passageiros: UsuarioCarona[];
+  criadoEm: string;
+  data: string;
 }
 
-export type NovaCarona = Omit<Carona, 'id' | 'passageiros'> & {
+export type NovaCarona = Omit<Carona, 'id' | 'passageiros' | 'criadoEm'> & {
   passageiros?: UsuarioCarona[];
 };
 
@@ -29,34 +45,44 @@ export interface ResultadoCarona {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CaronaService {
-
   private caronas: Carona[] = [];
   private caronasSubject = new BehaviorSubject<Carona[]>([]);
-  private idCounter = 1;
-  private storageKey = 'caronas_disponiveis';
+  private caronasCollection = 'caronas';
+  private caronasSalvasCollection = 'caronas_salvas';
 
-  constructor() {
-    this.carregarStorage();
-    this.emitirCaronas();
+  constructor(private usuarioService: UsuarioService) {
+    this.carregarCaronasRealtime();
   }
 
-  adicionar(carona: NovaCarona) {
-    this.caronas.push({
-      id: this.idCounter++,
-      ...carona,
+  async adicionar(carona: NovaCarona) {
+    const novaCarona: Omit<Carona, 'id'> = {
       nome: carona.nome.trim(),
       origem: carona.origem.trim(),
       destino: carona.destino.trim(),
       horario: carona.horario,
+      data: carona.data,
       linkMapa: (carona.linkMapa ?? '').trim(),
       motoristaEmail: this.normalizarEmail(carona.motoristaEmail),
-      passageiros: this.normalizarPassageiros(carona.passageiros)
-    });
-    this.salvarStorage();
-    this.emitirCaronas();
+      passageiros: this.normalizarPassageiros(carona.passageiros),
+      vagas: carona.vagas,
+      criadoEm: new Date().toISOString(),
+    };
+    if (navigator.onLine) {
+      await addDoc(collection(firebaseDb, this.caronasCollection), novaCarona);
+    } else {
+      const pendentes = JSON.parse(
+        localStorage.getItem('caronas-pendentes') || '[]',
+      );
+
+      pendentes.push(novaCarona);
+
+      localStorage.setItem('caronas-pendentes', JSON.stringify(pendentes));
+
+      alert('Sem internet. A carona será enviada automaticamente.');
+    }
   }
 
   listar(): Carona[] {
@@ -67,8 +93,8 @@ export class CaronaService {
     return this.caronasSubject.asObservable();
   }
 
-  buscarPorId(id: number): Carona | undefined {
-    return this.caronas.find(c => c.id === id);
+  buscarPorId(id: string): Carona | undefined {
+    return this.caronas.find((c) => c.id === id);
   }
 
   ehMotoristaDaCarona(carona: Carona, usuario: UsuarioCarona): boolean {
@@ -82,22 +108,32 @@ export class CaronaService {
     }
 
     return carona.passageiros.some(
-      passageiro => this.normalizarEmail(passageiro.email) === emailNormalizado
+      (passageiro) =>
+        this.normalizarEmail(passageiro.email) === emailNormalizado,
     );
   }
 
-  sincronizarUsuario(usuarioAnterior: UsuarioCarona, usuarioAtualizado: UsuarioCarona): void {
+  sincronizarUsuario(
+    usuarioAnterior: UsuarioCarona,
+    usuarioAtualizado: UsuarioCarona,
+  ): void {
     const emailAnterior = this.normalizarEmail(usuarioAnterior.email);
     const nomeAnterior = this.normalizarTexto(usuarioAnterior.nome);
     const emailAtualizado = this.normalizarEmail(usuarioAtualizado.email);
 
-    this.caronas = this.caronas.map(carona => {
-      const motoristaPorEmail = !!emailAnterior && this.normalizarEmail(carona.motoristaEmail) === emailAnterior;
-      const motoristaSemEmail = !carona.motoristaEmail && this.normalizarTexto(carona.nome) === nomeAnterior;
+    this.caronas.forEach(async (carona) => {
+      const motoristaPorEmail =
+        !!emailAnterior &&
+        this.normalizarEmail(carona.motoristaEmail) === emailAnterior;
+      const motoristaSemEmail =
+        !carona.motoristaEmail &&
+        this.normalizarTexto(carona.nome) === nomeAnterior;
       let passageiroAtualizado = false;
 
-      const passageiros = carona.passageiros.map(passageiro => {
-        const passageiroEhUsuario = !!emailAnterior && this.normalizarEmail(passageiro.email) === emailAnterior;
+      const passageiros = carona.passageiros.map((passageiro) => {
+        const passageiroEhUsuario =
+          !!emailAnterior &&
+          this.normalizarEmail(passageiro.email) === emailAnterior;
         if (!passageiroEhUsuario) {
           return passageiro;
         }
@@ -105,28 +141,31 @@ export class CaronaService {
         passageiroAtualizado = true;
         return {
           nome: usuarioAtualizado.nome.trim(),
-          email: emailAtualizado || passageiro.email
+          email: emailAtualizado || passageiro.email,
         };
       });
 
-      if (!motoristaPorEmail && !motoristaSemEmail && !passageiroAtualizado) {
-        return carona;
+      if (motoristaPorEmail || motoristaSemEmail || passageiroAtualizado) {
+        const docRef = doc(firebaseDb, this.caronasCollection, carona.id);
+        await updateDoc(docRef, {
+          nome:
+            motoristaPorEmail || motoristaSemEmail
+              ? usuarioAtualizado.nome.trim()
+              : carona.nome,
+          motoristaEmail:
+            motoristaPorEmail || motoristaSemEmail
+              ? emailAtualizado
+              : carona.motoristaEmail,
+          passageiros,
+        });
       }
-
-      return {
-        ...carona,
-        nome: motoristaPorEmail || motoristaSemEmail ? usuarioAtualizado.nome.trim() : carona.nome,
-        motoristaEmail: motoristaPorEmail || motoristaSemEmail ? emailAtualizado : carona.motoristaEmail,
-        passageiros
-      };
     });
-
-    this.salvarStorage();
-    this.emitirCaronas();
   }
 
   listarComoMotorista(usuario: UsuarioCarona): Carona[] {
-    return this.caronas.filter(carona => this.usuarioEhMotorista(carona, usuario));
+    return this.caronas.filter((carona) =>
+      this.usuarioEhMotorista(carona, usuario),
+    );
   }
 
   listarComoPassageiro(usuario: UsuarioCarona): Carona[] {
@@ -135,184 +174,254 @@ export class CaronaService {
       return [];
     }
 
-    return this.caronas.filter(carona =>
-      carona.passageiros.some(passageiro => this.normalizarEmail(passageiro.email) === emailNormalizado)
+    return this.caronas.filter((carona) =>
+      carona.passageiros.some(
+        (passageiro) =>
+          this.normalizarEmail(passageiro.email) === emailNormalizado,
+      ),
     );
   }
 
-  pegarCarona(id: number, passageiro: UsuarioCarona): ResultadoCarona {
+  async pegarCarona(
+    id: string,
+    passageiro: UsuarioCarona,
+  ): Promise<ResultadoCarona> {
     const carona = this.buscarPorId(id);
 
     if (!carona) {
-      return { sucesso: false, mensagem: 'Carona nao encontrada.' };
+      return { sucesso: false, mensagem: 'Carona não encontrada.' };
     }
 
     if (this.usuarioEhMotorista(carona, passageiro)) {
-      return { sucesso: false, mensagem: 'Voce ja e o motorista desta carona.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Você já é o motorista desta carona.',
+        carona,
+      };
     }
 
     const emailNormalizado = this.normalizarEmail(passageiro.email);
     if (!emailNormalizado) {
-      return { sucesso: false, mensagem: 'Faca login para entrar em uma carona.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Faça login para entrar em uma carona.',
+        carona,
+      };
     }
 
     const jaParticipa = carona.passageiros.some(
-      participante => this.normalizarEmail(participante.email) === emailNormalizado
+      (participante) =>
+        this.normalizarEmail(participante.email) === emailNormalizado,
     );
 
     if (jaParticipa) {
-      return { sucesso: false, mensagem: 'Voce ja entrou nessa carona.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Você já entrou nessa carona.',
+        carona,
+      };
     }
 
     if (carona.vagas <= 0) {
-      return { sucesso: false, mensagem: 'Nao ha mais vagas disponiveis.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Não há mais vagas disponíveis.',
+        carona,
+      };
     }
 
-    carona.passageiros.push({
-      nome: passageiro.nome.trim(),
-      email: emailNormalizado
-    });
-    carona.vagas--;
+    const docRef = doc(firebaseDb, this.caronasCollection, id);
+    const novosPassageiros = [
+      ...carona.passageiros,
+      {
+        nome: passageiro.nome.trim(),
+        email: emailNormalizado,
+      },
+    ];
 
-    this.salvarStorage();
-    this.emitirCaronas();
+    await updateDoc(docRef, {
+      passageiros: novosPassageiros,
+      vagas: carona.vagas - 1,
+    });
 
     return {
       sucesso: true,
-      mensagem: 'Carona confirmada! Ela ja aparece em Minhas Caronas.',
-      carona
+      mensagem: 'Carona confirmada! Ela já aparece em Minhas Caronas.',
+      carona: {
+        ...carona,
+        passageiros: novosPassageiros,
+        vagas: carona.vagas - 1,
+      },
     };
   }
 
-  atualizarCarona(id: number, dados: NovaCarona, usuario: UsuarioCarona): ResultadoCarona {
+  async atualizarCarona(
+    id: string,
+    dados: NovaCarona,
+    usuario: UsuarioCarona,
+  ): Promise<ResultadoCarona> {
     const carona = this.buscarPorId(id);
 
     if (!carona) {
-      return { sucesso: false, mensagem: 'Carona nao encontrada.' };
+      return { sucesso: false, mensagem: 'Carona não encontrada.' };
     }
 
     if (!this.usuarioEhMotorista(carona, usuario)) {
-      return { sucesso: false, mensagem: 'Apenas o motorista pode editar essa carona.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Apenas o motorista pode editar essa carona.',
+        carona,
+      };
     }
 
-    carona.nome = dados.nome.trim();
-    carona.origem = dados.origem.trim();
-    carona.destino = dados.destino.trim();
-    carona.horario = dados.horario;
-    carona.vagas = Number(dados.vagas);
-    carona.linkMapa = (dados.linkMapa ?? '').trim();
-    carona.motoristaEmail = this.normalizarEmail(dados.motoristaEmail) ?? carona.motoristaEmail;
-
-    this.salvarStorage();
-    this.emitirCaronas();
+    const docRef = doc(firebaseDb, this.caronasCollection, id);
+    await updateDoc(docRef, {
+      nome: dados.nome.trim(),
+      origem: dados.origem.trim(),
+      destino: dados.destino.trim(),
+      horario: dados.horario,
+      data: dados.data,
+      vagas: Number(dados.vagas),
+      linkMapa: (dados.linkMapa ?? '').trim(),
+      motoristaEmail:
+        this.normalizarEmail(dados.motoristaEmail) ?? carona.motoristaEmail,
+    });
 
     return {
       sucesso: true,
       mensagem: 'Carona atualizada com sucesso.',
-      carona
+      carona: { ...carona, ...dados },
     };
   }
 
-  excluirCarona(id: number, usuario: UsuarioCarona): ResultadoCarona {
+  async excluirCarona(
+    id: string,
+    usuario: UsuarioCarona,
+  ): Promise<ResultadoCarona> {
     const carona = this.buscarPorId(id);
 
     if (!carona) {
-      return { sucesso: false, mensagem: 'Carona nao encontrada.' };
+      return { sucesso: false, mensagem: 'Carona não encontrada.' };
     }
 
     if (!this.usuarioEhMotorista(carona, usuario)) {
-      return { sucesso: false, mensagem: 'Apenas o motorista pode excluir essa carona.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Apenas o motorista pode excluir essa carona.',
+        carona,
+      };
     }
 
-    this.caronas = this.caronas.filter(c => c.id !== id);
-    this.salvarStorage();
-    this.emitirCaronas();
+    await deleteDoc(doc(firebaseDb, this.caronasCollection, id));
 
     return {
       sucesso: true,
-      mensagem: 'Carona excluida com sucesso.'
+      mensagem: 'Carona excluída com sucesso.',
     };
   }
 
-  cancelarParticipacao(id: number, passageiro: UsuarioCarona): ResultadoCarona {
+  async cancelarParticipacao(
+    id: string,
+    passageiro: UsuarioCarona,
+  ): Promise<ResultadoCarona> {
     const carona = this.buscarPorId(id);
 
     if (!carona) {
-      return { sucesso: false, mensagem: 'Carona nao encontrada.' };
+      return { sucesso: false, mensagem: 'Carona não encontrada.' };
     }
 
     const emailNormalizado = this.normalizarEmail(passageiro.email);
     if (!emailNormalizado) {
-      return { sucesso: false, mensagem: 'Faca login para cancelar a carona.', carona };
+      return {
+        sucesso: false,
+        mensagem: 'Faça login para cancelar a carona.',
+        carona,
+      };
     }
 
-    const totalAntes = carona.passageiros.length;
-    carona.passageiros = carona.passageiros.filter(
-      participante => this.normalizarEmail(participante.email) !== emailNormalizado
+    const novosPassageiros = carona.passageiros.filter(
+      (participante) =>
+        this.normalizarEmail(participante.email) !== emailNormalizado,
     );
 
-    if (carona.passageiros.length === totalAntes) {
-      return { sucesso: false, mensagem: 'Voce nao esta nessa carona.', carona };
+    if (novosPassageiros.length === carona.passageiros.length) {
+      return {
+        sucesso: false,
+        mensagem: 'Você não está nessa carona.',
+        carona,
+      };
     }
 
-    carona.vagas++;
-    this.salvarStorage();
-    this.emitirCaronas();
+    const docRef = doc(firebaseDb, this.caronasCollection, id);
+    await updateDoc(docRef, {
+      passageiros: novosPassageiros,
+      vagas: carona.vagas + 1,
+    });
 
     return {
       sucesso: true,
-      mensagem: 'Sua participacao na carona foi cancelada.',
-      carona
+      mensagem: 'Sua participação na carona foi cancelada.',
+      carona: {
+        ...carona,
+        passageiros: novosPassageiros,
+        vagas: carona.vagas + 1,
+      },
     };
   }
 
-  cancelarCarona(id: number) {
-    this.caronas = this.caronas.filter(c => c.id !== id);
-    this.salvarStorage();
-    this.emitirCaronas();
-  }
+  async salvarFavorita(carona: Carona): Promise<void> {
+    const usuario = this.usuarioService.obterUsuarioAtual();
+    if (!usuario?.id) {
+      throw new Error('Faça login para salvar uma carona como favorita.');
+    }
 
-  salvarFavorita(carona: Carona) {
-    const chaveSalvas = 'caronas_salvas';
-    const caronasSalvas = this.carregarCaronasSalvas();
-    if (!caronasSalvas.some(c => c.id === carona.id)) {
-      caronasSalvas.push(carona);
-      localStorage.setItem(chaveSalvas, JSON.stringify(caronasSalvas));
+    const favoritasRef = collection(firebaseDb, this.caronasSalvasCollection);
+    const q = query(
+      favoritasRef,
+      where('usuarioId', '==', usuario.id),
+      where('caronaId', '==', carona.id),
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      await addDoc(favoritasRef, {
+        usuarioId: usuario.id,
+        caronaId: carona.id,
+        salvoEm: new Date().toISOString(),
+      });
     }
   }
 
-  private carregarCaronasSalvas(): Carona[] {
-    const valor = localStorage.getItem('caronas_salvas');
-    if (!valor) {
+  async carregarCaronasSalvas(): Promise<Carona[]> {
+    const usuario = this.usuarioService.obterUsuarioAtual();
+    if (!usuario?.id) {
       return [];
     }
-    try {
-      return (JSON.parse(valor) as Carona[]).map(carona => this.normalizarCarona(carona));
-    } catch {
-      return [];
-    }
+
+    const favoritasRef = collection(firebaseDb, this.caronasSalvasCollection);
+    const q = query(favoritasRef, where('usuarioId', '==', usuario.id));
+    const querySnapshot = await getDocs(q);
+    const idsSalvas = querySnapshot.docs.map(
+      (doc) => (doc.data() as { caronaId: string }).caronaId,
+    );
+
+    return this.caronas.filter((carona) => idsSalvas.includes(carona.id));
   }
 
-  private salvarStorage() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.caronas));
-  }
+  private carregarCaronasRealtime() {
+    const caronasRef = collection(firebaseDb, this.caronasCollection);
+    const q = query(caronasRef, orderBy('criadoEm', 'desc'));
 
-  private carregarStorage() {
-    const valor = localStorage.getItem(this.storageKey);
-    if (valor) {
-      try {
-        this.caronas = (JSON.parse(valor) as Carona[]).map(carona => this.normalizarCarona(carona));
-        const maiorId = this.caronas.reduce((max, carona) => Math.max(max, carona.id), 0);
-        this.idCounter = maiorId + 1;
-      } catch {
-        this.caronas = [];
-        this.idCounter = 1;
-      }
-    }
-  }
+    onSnapshot(q, (querySnapshot) => {
+      this.caronas = querySnapshot.docs
+        .map((doc) => ({
+          ...(doc.data() as Omit<Carona, 'id'>),
+          id: doc.id,
+        }))
+        .map((carona) => this.normalizarCarona(carona));
 
-  private emitirCaronas() {
-    this.caronasSubject.next([...this.caronas]);
+      this.caronasSubject.next([...this.caronas]);
+    });
   }
 
   private normalizarCarona(carona: Carona): Carona {
@@ -322,14 +431,18 @@ export class CaronaService {
       origem: (carona.origem ?? '').trim(),
       destino: (carona.destino ?? '').trim(),
       horario: carona.horario ?? '',
+      data: carona.data ?? '',
       vagas: Number(carona.vagas ?? 0),
       linkMapa: (carona.linkMapa ?? '').trim(),
       motoristaEmail: this.normalizarEmail(carona.motoristaEmail),
-      passageiros: this.normalizarPassageiros(carona.passageiros)
+      passageiros: this.normalizarPassageiros(carona.passageiros),
+      criadoEm: carona.criadoEm ?? new Date().toISOString(),
     };
   }
 
-  private normalizarPassageiros(passageiros?: UsuarioCarona[]): UsuarioCarona[] {
+  private normalizarPassageiros(
+    passageiros?: UsuarioCarona[],
+  ): UsuarioCarona[] {
     if (!Array.isArray(passageiros)) {
       return [];
     }
@@ -342,32 +455,26 @@ export class CaronaService {
 
       acumulado.push({
         nome: (passageiro?.nome ?? '').trim(),
-        email
+        email,
       });
-
       return acumulado;
     }, []);
   }
 
   private usuarioEhMotorista(carona: Carona, usuario: UsuarioCarona): boolean {
-    const emailUsuario = this.normalizarEmail(usuario.email);
-    const emailMotorista = this.normalizarEmail(carona.motoristaEmail);
-    const nomeUsuario = this.normalizarTexto(usuario.nome);
-    const nomeMotorista = this.normalizarTexto(carona.nome);
-
-    if (emailUsuario && emailMotorista) {
-      return emailUsuario === emailMotorista;
+    const emailNormalizado = this.normalizarEmail(usuario.email);
+    if (!emailNormalizado) {
+      return false;
     }
 
-    return !!nomeUsuario && nomeUsuario === nomeMotorista;
+    return this.normalizarEmail(carona.motoristaEmail) === emailNormalizado;
   }
 
-  private normalizarEmail(email?: string): string | undefined {
-    const valor = (email ?? '').trim().toLowerCase();
-    return valor || undefined;
+  private normalizarEmail(email?: string): string {
+    return (email ?? '').trim().toLowerCase();
   }
 
-  private normalizarTexto(valor?: string): string {
-    return (valor ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+  private normalizarTexto(texto?: string): string {
+    return (texto ?? '').trim().toLowerCase();
   }
 }

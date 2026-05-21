@@ -22,13 +22,13 @@ export class LoginPage implements OnInit {
   ngOnInit() {
   }
 
-  entrar() {
+  async entrar() {
     if (!this.credenciais.email.trim()) {
       alert('Por favor, informe seu email.');
       return;
     }
 
-    const usuarioCadastrado = this.usuarioService.buscarPorEmail(this.credenciais.email);
+    const usuarioCadastrado = await this.usuarioService.buscarPorEmail(this.credenciais.email);
 
     if (usuarioCadastrado) {
       if (usuarioCadastrado.senha && usuarioCadastrado.senha !== this.credenciais.senha) {
@@ -36,11 +36,28 @@ export class LoginPage implements OnInit {
         return;
       }
 
-      this.usuarioService.definirUsuarioAtual(usuarioCadastrado);
+      await this.usuarioService.definirUsuarioAtual(usuarioCadastrado);
     } else {
-      this.usuarioService.criarSessaoFallback(this.credenciais.email);
+      await this.usuarioService.criarSessaoFallback(this.credenciais.email);
     }
 
-    this.router.navigate(['/tabs/tab1']);
+    this.desfocarElementoAtivo();
+    await this.router.navigate(['/tabs/tab1']);
+  }
+
+  async irParaCadastro() {
+    this.desfocarElementoAtivo();
+    await this.router.navigate(['/cadastro']);
+  }
+
+  private desfocarElementoAtivo() {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const elementoAtivo = document.activeElement;
+    if (elementoAtivo instanceof HTMLElement) {
+      elementoAtivo.blur();
+    }
   }
 }

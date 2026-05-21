@@ -83,7 +83,7 @@ export class DetalhesCaronaPage implements OnInit {
           text: 'Excluir',
           role: 'destructive',
           handler: async () => {
-            const resultado = this.caronaService.excluirCarona(this.carona!.id, {
+            const resultado = await this.caronaService.excluirCarona(this.carona!.id, {
               nome: this.usuarioAtual!.nome,
               email: this.usuarioAtual!.email
             });
@@ -118,7 +118,7 @@ export class DetalhesCaronaPage implements OnInit {
           text: 'Cancelar carona',
           role: 'destructive',
           handler: async () => {
-            const resultado = this.caronaService.cancelarParticipacao(this.carona!.id, {
+            const resultado = await this.caronaService.cancelarParticipacao(this.carona!.id, {
               nome: this.usuarioAtual!.nome,
               email: this.usuarioAtual!.email
             });
@@ -144,11 +144,11 @@ export class DetalhesCaronaPage implements OnInit {
     const usuarioAtual = this.usuarioService.obterUsuarioAtual();
 
     if (!usuarioAtual) {
-      await this.exibirToast('Faca login para acompanhar suas caronas na aba Minhas.', 'warning');
+      await this.exibirToast('Faça login para acompanhar suas caronas na aba Minhas.', 'warning');
       return;
     }
 
-    const resultado = this.caronaService.pegarCarona(this.carona.id, {
+    const resultado = await this.caronaService.pegarCarona(this.carona.id, {
       nome: usuarioAtual.nome,
       email: usuarioAtual.email
     });
@@ -165,17 +165,16 @@ export class DetalhesCaronaPage implements OnInit {
 
   private carregarDados() {
     const idParam = this.route.snapshot.paramMap.get('id');
-    const id = idParam ? Number(idParam) : NaN;
     this.usuarioAtual = this.usuarioService.obterUsuarioAtual();
 
-    if (isNaN(id)) {
+    if (!idParam) {
       this.carona = undefined;
       this.ehMotorista = false;
       this.ehPassageiro = false;
       return;
     }
 
-    this.carona = this.caronaService.buscarPorId(id);
+    this.carona = this.caronaService.buscarPorId(idParam);
     this.atualizarPerfilNaCarona(this.usuarioAtual);
   }
 

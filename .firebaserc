@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "caronasolidaria-b828d",
+    "yes": "caronasolidaria-b828d",
+    "prod": "caronasolidaria-b828d"
+  },
+  "targets": {},
+  "etags": {}
+}
